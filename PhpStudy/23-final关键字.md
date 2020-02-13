@@ -27,3 +27,25 @@
     class Spiderman extends Superman {}
   ?>
 ```
+## 23.4 final的细节
+1. final不能够修饰成员属性
+```php
+  class A {
+    // final不能修饰成员属性
+    final public $name = 'hello'  // 这是错误的写法
+  }
+```
+2. final 方法不能被重写，但可以被继承
+```php
+  class A {
+    // 子类不能重写方法，但是可以继承
+    final public function sayOk(){
+      echo '<br>say ok';
+    }
+  }
+  class B extends A {}
+  $b = new b();
+  $b -> sayOk();
+```
+3. 一般来说，final类中不会出现final方法，因为final类都不能被继承，也就不会被重写override final类的方法了
+4. final类时可以被实例化的
