@@ -220,3 +220,75 @@
 > 既然他们都是用来保存数据的，那么如果一个数据从脚本开始到结束，都不会变化的话，我们就没有必要将其保存，反过来，属性只保存哪些将来可能变化的数据回到文件上传类中：  
 > 通过分析，发现上传的文件保存的路径、限制的大小、文件名的前缀、允许的文件类型等这些数据将来可能变化，所以我们将其保存到属性中
 ### 详细代码
+```php
+<?php 
+    header('content-type:text/html;charset=utf-8');
+    class Upload {
+        // 定义成员属性
+        private $upload_path = 'uploads/';
+        private $max_size = 204800;
+        private $pre_fix = 'lf_';
+        // 允许上传的文件类型
+        private $file_type = array('image/jpeg','image/jpg','image/png','image/gif');
+        
+        // 提供修改、读取的方法 set、get
+        public function __set($pro_name,$pro_value)
+        {
+            if(property_exists($this, $pro_name)){
+                $this -> $pro_name;
+            }
+        }
+        
+        public function __get($pro_name)
+        {
+            return $this -> $pro_name;
+        }
+        
+        // 功能方法，具体实现的方法
+        public function doUpload($file){
+            $upload_path = $this -> upload_path;            
+            // 1.限制文件上传的大小
+            $max_size = $this -> max_size;
+            if($file['size'] > $max_size){
+                echo '你上传的图片文件过大';
+                exit;
+            }
+            
+            // 2.防止文件被覆盖
+            $file_name = uniqid($this -> pre_fix,true);
+            $ext = strrchr($file['name'],'.');
+            $new_file = $file_name.$ext;
+            
+            // 3.分目录上传
+            $sub_path = date('Y-m-d').'/';
+            if(!is_file($sub_path)){
+                @mkdir($upload_path.$sub_path,0777,true);
+            }
+            $upload_path .= $sub_path.$new_file;
+            
+            // 4.控制上传的类型
+            $true_type = $file['type'];
+            if(!in_array($true_type,$this->file_type)){
+                echo '你上传的文件类型有误';
+                exit;
+            }
+            
+            // 4.1 
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $type = $finfo -> file($file['tmp_name']);
+            if(!in_array($type, $this -> file_type))
+            {
+                echo '你上传的文件类型有误';
+                exit;
+            }
+            if(move_uploaded_file($file['tmp_name'],$upload_path)){
+                return $sub_path.$new_file;
+            }else {
+                return false;
+            }
+        }
+        
+    }
+
+?>
+```
