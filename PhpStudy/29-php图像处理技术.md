@@ -117,5 +117,72 @@
 ?>
 ```
 6. 绘制字符串：imagestring()
+```php
+<?php
+    $image = imagecreatetruecolor(500, 300);
+    $color = imagecolorallocate($image, 194, 194, 194);
+    imagefill($image, 0, 0, $color);    
+    // 绘制文字
+    $bai = imagecolorallocate($image, 255, 0, 0);
+    /*
+     * 参数1：绘制到哪个画布
+     * 参数2：字体大小
+     * 参数3 4：x坐标、y坐标
+     * 参数5：绘制的文字
+     * 参数6：颜色
+     */
+    imagestring($image,25, 200, 250, 'hello world', $bai);    
+    header('content-type:image/png');
+    imagepng($image);
+    imagedestroy($image);
+?>
+```
 7. 绘制文字：imagettftext()
+```php
+<?php
+    $image = imagecreatetruecolor(500, 300);
+    $color = imagecolorallocate($image, 194, 194, 194);
+    imagefill($image, 0, 0, $color);
+    
+    // 绘制文字
+    $red = imagecolorallocate($image, 255, 0, 0);
+    /*
+     * 参数1：绘制的源
+     * 参数2：文字大小
+     * 参数3：偏移角度
+     * 参数4 5：x\y坐标
+     * 参数6：填充颜色
+     * 参数7：字体文件
+     * 参数8：绘制的文字
+     * 
+     */
+    imagettftext($image, 25, 30, 250, 260, $red, './STHUPO.TTF', 'hello world');    
+    header('content-type:image/png');
+    imagepng($image);
+    imagedestroy($image);    
+?>
+```
 8. 绘制弧形：imagearc()
+```php
+<?php
+    $image = imagecreatetruecolor(500, 300);
+    $color = imagecolorallocate($image, 194, 194, 194);
+    imagefill($image, 0, 0, $color);
+    // 绘制弧线
+    $red = imagecolorallocate($image, 255, 0, 0);
+    /*
+     * 参数1:绘制的目标源
+     * 参数2 3:xy坐标
+     * 参数4 5: 弧线的宽高
+     * 参数6 7: 弧线开始的角度，结束的角度
+     * 参数8:颜色
+     * 
+     */
+//     imagearc($image, 250, 150, 150, 150, 0, 180, $red);
+    imagefilledarc($image, 250, 150, 150, 150, 0, 180, $red, IMG_ARC_PIE);  
+    
+    header('content-type:image/png');
+    imagepng($image);
+    imagedestroy($image);
+?>
+```
