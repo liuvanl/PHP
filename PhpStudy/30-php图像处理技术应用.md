@@ -143,3 +143,27 @@
     $c -> makeImg();    
 ?>
 ```
+## 30.3 将验证码类应用到案例中
+1. 首先我们先创建一个表单：
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>document</title>
+</head>
+<body>
+	<form action="" method="post">
+		<div class="login_item">
+			<label for="yzm">请输入验证码：</label>
+			<input id="yzm" type="text">
+			<img src="./Captcha.class.php" >
+		</div>
+		<div class="login_submit">
+			<input type="submit" value="提交">
+		</div>
+	</form>
+</body>
+</html>
+```
+> 当我们提交表单的时候，拿用户输入的验证码  和  我们生成的验证码进行比较 如何将生成的验证码保存起来？需要使用到会话技术：SESSION技术
