@@ -41,3 +41,9 @@
   session_start();
   $_SESSION['name'] = 'wangwu';
 ```
++ session的删除
+1. 删除单个session
+```php
+  session_start();
+  unset($_SESSION['name']);
+```
