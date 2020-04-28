@@ -28,3 +28,16 @@
     $_SESSION['name'] = array('zhangsan','lisi');
   ?>
 ```
++ session的读取基本使用
+```php
+  <?php
+    session_start();
+    var_dump($_SESSION['name']);
+  ?>
+```
++ session的修改操作
+> 修改session也是通过$_SESSION数组进行操作，如果数组的下标已经存在，则表示修改的意思，并且会把原来的值覆盖掉
+```php
+  session_start();
+  $_SESSION['name'] = 'wangwu';
+```
