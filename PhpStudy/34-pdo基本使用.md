@@ -71,4 +71,75 @@
     var_dump($row);
 ```
 + 执行查询操作
-> 通过pdo对象的query方法实现，返回的是PDOStatement类的对象，该对象代表一个预处理的语句对象，将sql语句的结构部分缓存了
+> 通过pdo对象的query方法实现，返回的是PDOStatement类的对象，该对象代表一个预处理的语句对象，将sql语句的结构部分缓存了  
+> PDOStatement对象提供了3个方法查询数据：
+1. fetch()，获取一条数据
+2. fetchAll()，获取所有数据
+3. fetchColumn()，获取一列数据（一个字段的数据）
+```PHP
+    // 连接数据库
+    $dsn = "mysql:host=localhost;dbname=phpStudy;port=3306;charset=utf8";
+    $user = "root";
+    $pass = "";
+    $pdo = new PDO($dsn,$user,$pass);
+    
+    $sql = "SELECT * FROM `user`";
+    $pdo_statement = $pdo -> query($sql);
+    
+    /*
+     * 通常常量约束返回的数据的格式
+     * PDO::FETCH_ASSOC  表示关联类型的数据
+     * PDO::FETCH_NUM   表示索引数据
+     * PDO::FETCH_BOTH  表示关联、索引数据
+     */
+    
+    // 查询一条数据 fetch()    
+    $row = $pdo_statement -> fetch(PDO::FETCH_ASSOC);    
+    var_dump($row);
+    
+    // 查询全部数据
+    //$row = $pdo_statement -> fetchAll();
+    //var_dump($row);
+    
+    // 获取一个字段的值（一列的值）：fetchColumn(index)
+    //$row = $pdo_statement -> fetchColumn(0);
+    //var_dump($row);
+```
+## 34.4 pdo对象错误信息
+### 说明
+> 通过PDO对象的errorInfo、errorCode方法分别获得sql语句的错误信息、错误的代码号
+### 方法
+> errorInfo、errorCode
+```php
+    // 连接数据库
+    $dsn = "mysql:host=localhost;dbname=phpStudy;port=3306;charset=utf8";
+    $user = "root";
+    $pass = "";
+    $pdo = new PDO($dsn,$user,$pass);
+    
+    // sql语句
+    /*
+     * 这里的from故意写错的，让pdo抛出错误
+     */
+    $sql = "SELECT FRPM `user`";
+    $pdo -> query($sql);
+    
+    // 获取错误信息
+    $result = $pdo -> errorInfo();
+    $code = $pdo -> errorCode();
+    var_dump($result);
+    var_dump($code);
+```
+## 34.5 引号转义并包裹（应用场景：防止sql注入）
+### 说明
+> 引号转义并包裹，先将字符串中的引号转义（不再具有原来的意义），然后在外面再包裹一层引号
+```php
+    $dsn = "mysql:host=localhost;dbname=phpStudy;port=3306;charset=utf8";
+    $user = "root";
+    $pass = "";    
+    $pdo = new PDO($dsn,$user,$pass);    
+    $str = "hello 'zhangsan'";
+    // 对字符的内容进行转义并包裹
+    $resulte = $pdo -> quote($str);    
+    var_dump($resulte);
+```
