@@ -143,3 +143,91 @@
     $resulte = $pdo -> quote($str);    
     var_dump($resulte);
 ```
+## 34.6 pdo对象-事务处理
+### 说明
+> 一组DML语句的集合，事务有4个特点，原子性、一致性、隔离性、持久性事务就是逻辑上的一组操作，这组操作的各个单元要么全部成功、那么全部失败，使用事务时候，数据表的存储引擎必须是INNODB类型的
+### 使用事务的步骤
+> 开启事务：begin   ->  如果各个单元全部成功：commit   -> 如果任何一个单元失败：rollback
+### 案例
+> 以转账为例子，有一方执行错误，就会回滚，两条sql语句都执行完成，就commit
+```php
+    // 实例化pdo对象
+    $dsn = "mysql:host=localhost;dbname=phpStudy;port=3306;charset=utf8";
+    $user = "root";
+    $pass = "";
+    $pdo = new PDO($dsn,$user,$pass);
+    
+    // 开启事务
+    $pdo -> beginTransaction();
+    
+    // 准备sql语句
+    $sql1 = "UPDATE `cash` SET money = money - 1000 WHERE name='宋江'";
+    $sql2 = "UPDATE `cash` SET money = money + 1000 WHERE name = '李逵'";
+    
+    $res1 = $pdo -> exec($sql1);
+    $res2 = $pdo -> exec($sql2);
+    
+    if(!$res1 || !$res2){
+        // 执行回滚
+        $pdo -> rollBack();
+    }else {
+        $pdo -> commit();
+    }
+```
+## 34.7 pdo对象-预处理
+### 说明
+> 预处理，提前、预先处理sql，预处理执行的结果：先把sql语句的结构部分固定住，后期结构不会再变化，只能结果变化
+### 实现步骤
+1. 先使用占位符代替id的值
+2. 再预处理，也就是就是固定sql语句的结构
+3. 再绑定真实的数据（使用真实的数据替换占位符）
+4. 执行sql
+### 使用预处理的优势
+1. 对数据库的操作更加安全，将外部用户传递的数据使用占位符代替，不影响sql语句的结构
+2. 预处理会将sql语句的结构部分固定住，如果后期在执行类似的操作时，就直接使用上次编译好的（预处理）的语句，从而提升效率
+```php
+    $dsn = "mysql:host=localhost;dbname=phpStudy;port=3306;charset=utf8";
+    $user = "root";
+    $pass = "";
+    $pdo = new PDO($dsn,$user,$pass);
+    
+    // 预处理
+    // 1.先使用占位符代替值部分
+    $sql = "DELETE FROM user WHERE id=?";
+    // 2. 固定sql语句的结构，使用pdo对象的prepare方法固定，返回PDOstatement对象
+    $pdo_statement = $pdo -> prepare($sql);
+    // 3. 使用真实的值替换占位符
+    $pdo_statement -> bindValue(1, '3 || 1=1');
+    // 4. 执行
+    $pdo_statement -> execute();
+    echo '删除成功';
+```
+## 34.8 pdo对象-lastInsertId
+### 说明
+> 该方法用来获得上次执行插入操作时产生主键的值
+### 案例演示
+```php
+    $dsn = "mysql:host=localhost;dbname=phpStudy;port=3306;charset=utf8";
+    $user = "root";
+    $pass = "";
+    $pdo = new PDO($dsn,$user,$pass);
+    
+    // 插入一条数据
+    $sql = "INSERT INTO user VALUES(null,'wangwu','admin123')";
+    $pdo -> exec($sql);
+    // 获取刚刚插入的这条记录主键的值
+    $id = $pdo -> lastInsertId();
+    var_dump($id);
+```
+## 34.9 PDOStatement对象
+### 说明
+> 获得PDOStatement对象的方法：query()、prepare()
+### PDOStatement对象提供的方法
+1. fetch（）查询1条记录
+2. fetchAll()  查询所有记录
+3. fetchColumn() 查询一个字段的值
+4. bindValue()  绑定参数（替换占位符）
+5. execute()    执行预编译的sql语句
+6. closeCursor()  关闭游标、指针（查询数据之后，将游标初始化，便于下次查询）
+7. errorCode()	获得预编译sql语句中的错误代码
+8. errorInfo()	获得预编译的sql语句中的错误信息
