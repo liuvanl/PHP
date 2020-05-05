@@ -231,3 +231,93 @@
 6. closeCursor()  关闭游标、指针（查询数据之后，将游标初始化，便于下次查询）
 7. errorCode()	获得预编译sql语句中的错误代码
 8. errorInfo()	获得预编译的sql语句中的错误信息
+## 34.40 封装pdo类
+```php
+    class Self_PDO {
+        // 私有属性
+        private static $instance;   //dao类的单利对象
+        private $pdo;   // pdo对象
+        
+        private function __construct(array $options){
+            // 初始化属性
+            $host = isset($options['host']) ? $options['host'] : '';
+            $user = isset($options['user']) ? $options['user'] : '';
+            $pass = isset($options['pass']) ? $options['pass'] : '';
+            $port = isset($options['port']) ? $options['port'] : '';
+            $dbname = isset($options['dbname']) ? $options['dbname'] : '';
+            $charset = isset($options['charset']) ? $options['charset'] : '';            
+            $dsn = "mysql:host=$host;dbname=$dbname;port=$port;charset=$charset";
+            $this->pdo = new PDO($dsn,$user,$pass);
+        }
+        // 防止克隆
+        private function __clone(){}
+        // 单利模式实现的方法
+        public static function getSingleton($options){
+            if(!self::$instance instanceof self){
+                self::$instance = new self($options);
+            }
+            return self::$instance;
+        }
+        
+        // 查询一条数据
+        public function fetchOne($sql){
+            $pdo_statement = $this->pdo->query($sql);
+            if($pdo_statement == false){
+                // 说明sql语句有误
+                $error = $this->pdo->errorInfo();
+                $err_str = "SQL语句有误，详细信息如下：<br>".$error[2];
+                echo $err_str;
+                return false;
+            }
+            return $pdo_statement -> fetch(PDO::FETCH_ASSOC);
+        }
+        // 查询所有数据
+        public function fetchAll($sql){
+            $pdo_statement = $this->pdo->query($sql);
+            if($pdo_statement == false){
+                $error = $this->pdo->errorInfo();
+                $err_str = "SQL语句有误，详细信息如下：<br>".$error[2];
+                echo $err_str;
+                return false;
+            }
+            return $pdo_statement -> fetchAll(PDO::FETCH_ASSOC);
+        }
+        // 查询一个字段的值
+        public function fetchColumn($sql){
+            $pdo_statement = $this->pdo->query($sql);
+            if($pdo_statement == false){
+                $error = $this->pdo->errorInfo();
+                $err_str = "SQL语句有误，详细信息如下：<br>".$error[2];
+                echo $err_str;
+                return false;
+            }
+            return $pdo_statement -> fetchColumn();
+        }
+        // 执行增删改的操作，返回的是执行增删改受影响的记录数
+        public function exec($sql){
+            return $this->pdo->exec($sql);            
+        }
+        // 引导转义包裹的方法
+        public function quote($data){
+            return $this->pdo->quote($data);
+        }
+        // 查询刚刚插入的主键
+        public function lastInsertId(){
+            return $this->pdo->lastInsertId();
+        }
+    }
+    
+    $options = array(
+        "host" => "localhost",
+        "user" => "root",
+        "pass" => "",
+        "port" => 3306,
+        "dbname" => "phpStudy",
+        "charset" => "utf8"
+    );
+    
+    $pdo1 = Self_PDO::getSingleton($options);
+    $sql1 = "DELETE FROM user WHERE id = 6";
+    $res = $pdo1 -> exec($sql1);
+    var_dump($res);
+```
