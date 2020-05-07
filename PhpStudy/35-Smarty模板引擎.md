@@ -307,7 +307,96 @@ JS;
     </html>
 ```
 ## 35.2 smarty缓存
-
-
-
-
+> 每次都要去数据库查询，所以这个效率是很低的,只要有一个人将商品的信息查询出来，就保存到服务器的一个文件中，其他用户的访问，直接让其访问该缓存的文件即可
+### 35.2.1 smarty实现缓存
+```php
+    require 'pdo.class.php';
+    $options = array(
+        "host" => "localhost",
+        "user" => "root",
+        "pass" => "",
+        "port" => 3306,
+        "dbname" => "phpStudy",
+        "charset" => "utf8"
+    );    
+    $pdo1 = Self_PDO::getSingleton($options);
+    $sql1 = "SELECT * FROM `ecs_goods` order by goods_id";
+    
+    $good_list = $pdo1 -> fetchAll($sql1);
+    // 加载smarty核心文件
+    require 'libs/Smarty.class.php';
+    $smarty = new Smarty();
+    
+    // 1. 开启缓存
+    $smarty -> caching = true;
+    // 2. 设置缓存文件保存的地址（通常会存到cache目录里面）
+    $smarty -> setCacheDir('cache');
+    // 3. 设置缓存的周期
+    $smarty -> cache_lifetime = 60;
+    
+    // 传递数据
+    $smarty -> assign('good_list',$good_list);
+    $smarty -> display('./tpl/goods.html');
+```
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    {literal}
+    <style>
+        .good_box {
+            width: 1000px;
+            margin: 100px auto;
+        }
+        .good_title {
+            display: flex;
+        }
+        .good_title span {
+            flex: 1;
+            padding: 10px 0;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #ccc;		
+        }
+        .good_title span:nth-child(2) {
+            border-right: 0;
+            border-left: 0;
+        }
+        .good_items {
+            display: flex;
+            border: 1px solid #ccc;
+            border-top: 0;
+            border-right: 0;
+        }
+        .good_items span {
+            flex: 1;
+            padding: 10px 0;
+            color: #666;
+            text-align: center;
+            border-right: 1px solid #ccc;
+        }
+    </style>
+    {/literal}
+    </head>
+    <body>
+        <div class="good_box">
+            <div class="good_title">
+                <span>序号</span>
+                <span>商品名称</span>
+                <span>商品价格</span>
+            </div>
+            <div class="good_list">
+                {foreach $good_list as $v}
+                <div class="good_items">
+                    <span>{$v['goods_id']}</span>
+                    <span>{$v['goods_name']}</span>
+                    <span>{$v['shop_price']}</span>
+                </div>
+                {/foreach}
+            </div>
+        </div>
+    </body>
+    </html>
+```
