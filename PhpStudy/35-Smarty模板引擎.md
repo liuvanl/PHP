@@ -1,0 +1,186 @@
+## 35.1 模板引擎的基本介绍
+### 35.1.1 基本介绍
+> 实际开发的时候，公司是明确的分工的，php程序员主要负责php代码（业务逻辑相关），web前端程序员主要负责（html、css、JavaScript）（让页面更加美观用户体验更好）
+## 35.2 Smarty模板语法
+### 35.2.1 smarty基本介绍
+#### 介绍
+> 目前模板引擎技术有很多，Laravel框架（blade模板引擎）、ThinkPHP框架（自己的模板引擎技术）、Smarty模板引擎技术，虽然有很多模板引擎技术，但是原理都是一样的，所以我们以smaty为例学习
+#### 如何使用
+1. 下载：http://www.smarty.net
+2. 解压之后，libs目录就是smarty的核心代码，通常重命名为smarty再拷贝到我们的项目中
+3. 使用的话，直接加载smarty里面的Smarty.class.php并实例化
+4. 创建smarty.php
+```php
+    // 加载smarty的核心类文件
+    require './libs/Smarty.class.php';
+    $smarty = new Smarty();    
+    // 真实的数据
+    $name = "张三";    
+    // 根据真实数据分配一下，并显示即可生成编译文件
+    // 参数1：html模板中使用的变量的名字（占位符名字）
+    // 参数2：真实数据
+    // 就会生成一个编译文件，会使用真实的数据代替模板中的占位符
+    $smarty -> assign('name',$name);
+    $smarty -> display('./tpl/1.tpl.html');
+```
+5. 创建模板文件tpl.html
+```html
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Insert title here</title>
+  </head>
+  <body>
+    <h1>{$name}</h1>
+  </body>
+  </html>
+```
+6. 最终生成的编译文件会默认保存到templates_c这个目录（后期可以修改）
+### 35.2.2 smarty模板中变量来源
+#### 介绍
+> Smarty中的模板中变量的来源，有如下几种：
+1. smarty分配（assign）过来的真实数据
+2. 配置文件数据---配置文件用来保存一些有规范的、可以在多个文件中公用的数据  例如：需要在html文件中显示图片：
++ img.conf
+```conf
+  img_url = img/
+```
++ 其次，在html模板中想要使用配置文件，需要先加载文件 config.html
+```html
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Insert title here</title>
+  </head>
+  <body>
+    {config_load file="../config/img.conf"}
+    <img src="{#img_url#}pic1.jpg">
+    <img src="{#img_url#}pic2.jpg">
+  </body>
+  </html>
+```
+```php
+    // 加载模板文件
+    $smarty -> display('./tpl/2.config.html');
+```
+3. smarty保留的变量
+> 这些变量是smarty保留的、内置的，不需要声明、加载，可以直接使用
++ {$smarty.now}，用来获得当前的时间戳
++ {$smarty.const.常量名}，用来获得PHP文件中定义的常量
++ {$smarty.config}，获得配置文件中的配置项
++ {$smarty.current_dir} ，当前文件所在的目录
+```html
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Insert title here</title>
+  </head>
+  <body>
+    <p>当前时间戳是：{$smarty.now}</p>
+    <p>获得常量：{$smarty.const.ROOT}</p>
+    {config_load file="config/img.conf"}
+    <p>获得配置项：{$smarty.config.img_url}</p>
+    <p>当前文件所在目录：{$smarty.current_dir}</p>
+  </body>
+  </html>
+```
+```php
+    require './libs/Smarty.class.php';
+    $smarty = new Smarty();    
+    // 定义常量
+    define('ROOT','http://www.liuvanl.com');    
+    $smarty -> display('./tpl/3.smarty_inner.html');
+```
+4. php请求变量
+> 在html模板中，还可以获得PHP提供的http请求是携带的变量、PHP的环境变量等
+```php
+    header('content-type:text/html;charset=utf8');
+    require './libs/Smarty.class.php';
+    $smarty = new Smarty();    
+    // cookie数据
+    setcookie('is_login','on',time()+60);
+    // session数据
+    session_start();
+    $_SESSION['cart'] = '白说';    
+    $smarty -> display('./tpl/4.smarty_http.html');
+```
+```html
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Insert title here</title>
+  </head>
+  <body>
+    <p>接收URL地址栏中的参数：{$smarty.get.id}</p>
+    <p>接收cookie数据：{$smarty.cookies.is_login}</p>
+    <p>接收session数据：{$smarty.session.cart}</p>
+    <p>接收$_SERVER环境变量：{$smarty.server.DOCUMENT_ROOT}</p>
+  </body>
+  </html>
+```
+### 35.2.3 smarty模板中变量调节器
+#### 介绍
+> 变量调节器，就是对模板中的变量进行调节、修饰作用,例如：模板中可以使用{$smarty.now}获得当前的时间戳，用户看不懂时间戳的，所以我们需要对变量进行修饰，将其转换成日期格式就好了
+#### 如何使用
+> 语法：{模板变量|修饰器:传递的参数}
+#### 变量调节器
+```php
+    date_default_timezone_set('PRC');
+    require './libs/Smarty.class.php';
+    $smarty = new Smarty();
+    
+    $str = "hello world";
+    
+    // 传递一个js代码过去
+    $script = <<<JS
+        <script>
+            for(var i = 0 ; i < 5;i++){
+                alert(i);
+            }
+        </script>
+JS;
+    
+    $book = '想和你在一起';
+    
+    $smarty -> assign('str',$str);    
+    $smarty -> assign('script',$script);
+    $smarty -> assign('book',$book);
+    $smarty -> display('./tpl/5.smarty_modifier.html');
+```
+```html
+  <!DOCTYPE html>
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <title>Insert title here</title>
+  </head>
+  <body>
+    <p>当前时间是：{$smarty.now|date_format:'%Y-%m-%d %H:%M:%S'}</p>
+    <p>首字母大写：{$str|capitalize}</p>
+    <p>字符串整体大写：{$str|upper}</p>
+    <p>统计字符个数：{$str|count_characters}</p>
+    <p>字符缩进：{$str|indent:2:'&nbsp;'}</p>
+    <p>进行实体转码：{$script|escape}</p>
+    <p>字符串截取：{$book|truncate:5}</p>
+    <a href="index.php?book_name={$book|escape:'url'}">URL转码</a>
+  </body>
+  </html>
+```
+### 35.2.4 smarty模板中流程控制语句
+#### 介绍
+> 在html模板中，可以使用PHP的流程控制语句
+1. foreach
+2. for
+3. if elseif else
+4. include
+5. extends
+6. block
+7. literal
+
+
+
+
