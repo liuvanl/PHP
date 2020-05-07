@@ -174,12 +174,139 @@ JS;
 #### 介绍
 > 在html模板中，可以使用PHP的流程控制语句
 1. foreach
+```php
+    require './libs/Smarty.class.php';
+    $smarty = new Smarty();
+    
+    $list = array(
+        array('good_id'=>1,'good_name'=>'Nokia N97'),
+        array('good_id'=>2,'good_name'=>'Huawei P40'),
+        array('good_id'=>3,'good_name'=>'Xiaomi 10')
+    );
+    
+    $smarty -> assign('list',$list);
+    $smarty -> display('./tpl/6.smarty.html');
+```
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    </head>
+    <body>
+        <table border=1 width="500" align="center">
+            <tr>
+                <th>id</th>
+                <th>name</th>
+            </tr>
+            {foreach $list as $k=>$v}
+            <tr>
+                <td>{$v['good_id']}</td>
+                <td>{$v['good_name']}</td>
+            </tr>
+            {/foreach}
+        </table>
+    </body>
+    </html>
+```
 2. for
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    </head>
+    <body>
+        {for $i=0 to 6}
+            <p>{$i}</p>
+        {/for}
+
+        {for $i=1 to 10 step=2}
+            <p>hello world</p>
+        {/for}
+    </body>
+    </html>
+```
 3. if elseif else
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    </head>
+    <body>
+        {if $money > 5000}
+            <p>买个手机吧</p>
+        {else if $money > 3000}
+            <p>买个平板吧</p>
+        {/if}
+    </body>
+    </html>
+```
 4. include
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    </head>
+    <body>
+        {include file="tpl/common/header.html"}
+        <h2>这是主体</h2>
+        {include file="tpl/common/footer.html"}
+    </body>
+    </html>
+```
 5. extends
 6. block
-7. literal
+> 模板继承实现的功能和include非常类似，只是模板继承比include更加强大include只是用来加载外部模板文件的，不能修改被加载的文件的代码，模板继承可以实现
++ 将公共的代码提取到公共的文件（DOCTYPE、head、css等），然后在公共的模板里面指定哪些地方可以被重写，通过{block}标签指定哪些地方可以被重写
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    </head>
+    <body>
+        {block name="amao"}1这是公共模板的内容{/block}
+    </body>
+    </html>
+```
+```html
+    {extends file="tpl/common/layout.html"}
+    {block name="amao" append}这是我们修改的内容{/block}
+    {block name="amao" prepend}这是我们修改的内容{/block}
+```
++ 我们的模板要继承该公共的模板（类似于include）如果想覆盖、重写公共的模板里面的内容的话，也是通过{block}重写注意：我们的模板继承公共模板之后，公共模板的内容会覆盖我们的内容
++ block标签还提供了2个参数：append表示追加在原来内容的后面，prepend追加到原来内容的前面
+7. literal(新版本已经不需要这个了)
+> 由于smarty的默认的占位符（标签）就是{}，一看到花括号就去解析了，由于这里不需要smarty解析，所以我们就可以使用{literal}标签包起来
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    </head>
+    {literal}
+    <style>
+        h1 {
+            font-size: 40px;
+            color: red;
+        }
+    </style>
+    {/literal}
+    <body>
+        {block name="title"}<h1>This is h1 title</h1>{/block}
+    </body>
+    </html>
+```
+## 35.2 smarty缓存
 
 
 
