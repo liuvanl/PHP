@@ -306,7 +306,7 @@ JS;
     </body>
     </html>
 ```
-## 35.2 smarty缓存
+## 35.3 smarty缓存
 > 每次都要去数据库查询，所以这个效率是很低的,只要有一个人将商品的信息查询出来，就保存到服务器的一个文件中，其他用户的访问，直接让其访问该缓存的文件即可
 ### 35.2.1 smarty实现缓存
 ```php
@@ -399,4 +399,77 @@ JS;
         </div>
     </body>
     </html>
+```
+## 35.4 Smarty相关配置
+### 35.4.1 设置模板、编译文件保存目录
+#### 介绍
+> 通过setTemplateDir、setCompileDir两个方法分别设置模板文件在哪个目录、编译文件在哪个目录：
+#### 如何使用
+```php
+    // 设置模板文件保存的目录
+    $smarty -> setTemplateDir('tpl');
+    // 设置编译文件保存的目录
+    $smarty -> setCompileDir('tpl_c');
+    $smarty -> display('1.smarty.html');
+```
+## 35.5 自定义模板引擎
+### 35.5.1 先在html模板中定义占位符
+```html
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    </head>
+    <body>
+        {$name}
+    </body>
+    </html>
+```
+### 35.5.2 自定义模板引擎将占位符替换成真实数据
+```php
+    class SelfTpl {
+        public  function display($filename){
+            // 获取文件的内容
+            $content = file_get_contents($filename);
+            // 将里面的占位符替换成真实数据
+            $new_content = str_replace('{$name}', '张三', $content);
+            // 将替换好的内容，写入到一个新文件中
+            $file = 'templates_c/'.mt_rand(1000,9999).md5($filename).'.php';
+            file_put_contents($file,$new_content);
+            require_once $file;   // 显示新文件的内容
+        }        
+    }
+    
+    $tp1 = new SelfTpl();
+    $tp1 -> display('tpl/self_tpl.html');
+```
+### 35.5.3 如果模板中有多少个占位符如何替换？
+> 思考，你怎么知道模板中有多少占位符，知道之后才可能将占位符替换成什么真实数据，解决思路：模板中有多少占位符，取决于PHP分配了多少真实数据  
+> 所以我们需要先assign()一下，将分配的数据保存到对象的属性中  
+> 将来替换的时候，遍历这个属性，将其替换成真实的数据  
+```php
+    class SelfTpl {
+        private $tpl_vars = [];     // 该属性用来保存分配的数据
+        public function assign($pro_name,$pro_value){
+            $this -> tpl_vars[$pro_name] = $pro_value;
+        }
+        public  function display($filename){
+            // 获取文件的内容
+            $content = file_get_contents($filename);
+            // 将里面的占位符替换成真实数据
+            foreach ($this->tpl_vars as $k => $v){
+                $content = str_replace('{$'.$k.'}',$v, $content);
+            }            
+            // 将替换好的内容，写入到一个新文件中
+            $file = 'templates_c/'.mt_rand(1000,9999).md5($filename).'.php';            
+            file_put_contents($file,$content);
+            require_once $file;   // 显示新文件的内容
+        }        
+    }    
+    $tp1 = new SelfTpl();    
+    $tp1 -> assign('name','李四');
+    $tp1 -> assign('age',30);
+    $tp1 -> assign('sex','man');    
+    $tp1 -> display('tpl/self_tpl.html');
 ```
